@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+    >
+    <link rel="stylesheet" href="styles.css">
+
+    <title>AMA-BOT</title>
+</head>
+
+<body data-theme="light">
+
+    <header class="site-header">
+        <h1 class="site-title">AMA-BOT</h1>
+
+        <nav class="site-nav" aria-label="Main navigation">
+            <button id="resetchat" class="theme-toggle" type="button">
+                Reset Chat
+            </button>
+            </button>
+            <button id="toggleDarkMode" class="theme-toggle" type="button">
+                Dark mode
+            </button>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <section class="chat-section">
+
+            <h2 id="welcome-title">Velkommen til AMA-BOT</h2>
+
+            <form class="question-form">
+                <div class="form-group">
+                    <label for="question"></label>
+
+                    <input
+                        type="text"
+                        id="question"
+                        name="question"
+                        placeholder="Skriv dit spørgsmål her..."
+                    >
+                </div>
+
+                <button class="submit-button" type="submit">
+                    Indsend
+                </button>
+            </form>
+
+        </section>
+    </main>
+
+    <script src="main.js"></script>
+</body>
+</html>
