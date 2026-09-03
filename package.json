@@ -4,8 +4,8 @@
   "description": "",
   "main": "theme.js",
   "scripts": {
-    "dev": "node --watch public/js/server.js",
-    "start": "node public/js/server.js"
+    "dev": "node --watch server.js",
+    "start": "node server.js"
   },
   "repository": {
     "type": "git",
