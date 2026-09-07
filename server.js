@@ -18,16 +18,15 @@ const answers = [
       "Jeg hedder Mohanad.",
       "Jeg er 27 år gammel.",
       "Jeg er en 27-årig studerende, der elsker at kode.",
-      "Mit navn er Mohanad, og jeg er 27 år gammel."
     ]
-  },
+  },  
   {
     category: "lokation",
     keywords: ["bor", "lokation", "fra"],
     answers: [
       "Jeg bor i Aarhus.",
       "Jeg er født i Danmark, men min familie er fra Irak.",
-      "Min by er Aarhus, jeg har ikke boet andre steder i Danmark."
+      "Jeg er fra Aarhus, jeg har ikke boet andre steder."
     ]
   },
   {
@@ -139,6 +138,9 @@ app.post("/ask", (request, response) => {
 
 app.post("/clear-messages", (request, response) => {
   messages.length = 0;
+  topicStats.navn = 0;
+  topicStats.lokation = 0;
+  topicStats.hobby = 0;
   response.redirect("/");
 });
 
