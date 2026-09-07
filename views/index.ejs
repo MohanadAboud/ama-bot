@@ -20,9 +20,11 @@
         <h1 class="site-title">AMA-BOT</h1>
 
         <nav class="site-nav" aria-label="Main navigation">
-            <button id="resetchat" class="theme-toggle" type="button">
+            <form method="POST" action="/clear-messages">
+            <button id="resetchat" class="theme-toggle" type="submit">
                 Reset Chat
             </button>
+            </form>
             <button id="toggleDarkMode" class="theme-toggle" type="button">
                 Dark mode
             </button>
@@ -34,7 +36,7 @@
 
             <h2 id="welcome-title">Velkommen til AMA-BOT</h2>
 
-            <form class="question-form">
+            <form class="question-form" method="POST" action="/ask" >
                 <div class="form-group">
                     <label for="question"></label>
 
@@ -43,14 +45,38 @@
                         id="question"
                         name="question"
                         placeholder="Skriv dit spørgsmål her..."
-                    >
+                    >   
                 </div>
 
                 <button class="submit-button" type="submit">
                     Indsend
                 </button>
             </form>
+            <% if (error) { %>
+                <p role="alert" style="color: red;"><%= error %></p>
+            <% } %>
+            <% for (const message of messages) { %>
+            <article class="<%= message.type %>">
+                <p><%= message.text %></p>
+            <time id="message-time">
+            <%= message.createdAt.toLocaleTimeString("da-DK", {
+                hour: "2-digit",
+                minute: "2-digit"
+            }) %>
+            </time>
+            </article>
+            <% } %>
         </section>
+        <section class="stats-section">
+            <h2>Spørgsmål fordelt på emner</h2>
+
+            <ul>
+                <li>Navn: <%= topicStats.navn %></li>
+                <li>Lokation: <%= topicStats.lokation %></li>
+                <li>Hobby: <%= topicStats.hobby %></li>
+            </ul>
+        </section>
+
     </main>
 <script src="/js/theme.js"></script>
 

@@ -3,8 +3,19 @@
 const body = document.body;
 const toggleButton = document.querySelector("#toggleDarkMode");
 
-toggleButton.addEventListener("click", () => {
+const savedTheme = localStorage.getItem("theme") || "light";
+body.dataset.theme = savedTheme;
+
+if (toggleButton) {
+  toggleButton.textContent = savedTheme === "dark" ? "Light mode" : "Dark mode";
+
+  toggleButton.addEventListener("click", () => {
     const isDark = body.dataset.theme === "dark";
-    body.dataset.theme = isDark ? "light" : "dark";
+    const newTheme = isDark ? "light" : "dark";
+
+    body.dataset.theme = newTheme;
     toggleButton.textContent = isDark ? "Dark mode" : "Light mode";
-});
+
+    localStorage.setItem("theme", newTheme);
+  });
+}
