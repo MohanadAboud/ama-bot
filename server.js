@@ -1,4 +1,6 @@
 import express from "express";
+import fs from "node:fs/promises";
+import { answers } from "./data/answers.js";
 
 const app = express();
 const port = 3000;
@@ -8,57 +10,42 @@ app.use(express.static("public"));
 
 app.set("view engine", "ejs");
 
-const messages = [];
+async function loadMessages() {
+  const data = await fs.readFile("./data/messages.json", "utf8");
+  const messages = JSON.parse(data);
 
-const answers = [
-  {
-    category: "navn",
-    keywords: ["navn", "hedder", "hvem er du", "gammel", "alder"],
-    answers: [
-      "Jeg hedder Mohanad.",
-      "Jeg er 27 år gammel.",
-      "Jeg er en 27-årig studerende, der elsker at kode.",
-    ]
-  },  
-  {
-    category: "lokation",
-    keywords: ["bor", "lokation", "fra"],
-    answers: [
-      "Jeg bor i Aarhus.",
-      "Jeg er født i Danmark, men min familie er fra Irak.",
-      "Jeg er fra Aarhus, jeg har ikke boet andre steder."
-    ]
-  },
-  {
-    category: "hobby",
-    keywords: ["fritid", "hobby", "kan lide"],
-    answers: [
-      "I min fritid kan jeg godt lide at læse.",
-      "Jeg elsker at gå ture, når vejret tillader det.",
-      "I min fritid kan jeg godt lide at spille videospil og kode.",
-      "Min hobby er at spille videospil, primært roguelike-spil."
-    ]
-  }
-];
+  return messages.map((message) => ({
+    ...message,
+    createdAt: new Date(message.createdAt)
+  }));
+}
+
+async function saveMessages(messages) {
+  const json = JSON.stringify(messages, null, 2);
+  await fs.writeFile("./data/messages.json", json);
+}
 
 function sanitizeQuestion(input) {
-  return input.replace(/[\u0000-\u001F\u007F]/g, "");
+  return String(input).replace(/[\u0000-\u001F\u007F]/g, "");
+}
+
+function normalizeQuestion(question) {
+  return question
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
 }
 
 function countMatches(keywords, normalizedQuestion) {
-  const matches = keywords.filter((keyword) =>
-    normalizedQuestion.includes(keyword)
-  );
-
-  return matches.length;
+  return keywords.filter((keyword) =>
+    normalizedQuestion.includes(keyword.toLowerCase())
+  ).length;
 }
 
 function findBestAnswer(question) {
-  const normalizedQuestion = question.toLowerCase();
+  const normalizedQuestion = normalizeQuestion(question);
 
-  let bestScore = 0;
-  let bestAnswer = "Det kender jeg ikke svaret på endnu.";
-  let bestCategory = "";
+  const matchedCategories = [];
 
   for (const answerGroup of answers) {
     const score = countMatches(
@@ -66,31 +53,48 @@ function findBestAnswer(question) {
       normalizedQuestion
     );
 
-    if (score > bestScore) {
-      bestScore = score;
-      bestCategory = answerGroup.category;
+    if (score > 0) {
+      const answer =
+        answerGroup.answer[
+          Math.floor(Math.random() * answerGroup.answer.length)
+        ];
 
-      const randomIndex = Math.floor(
-        Math.random() * answerGroup.answers.length
-      );
-
-      bestAnswer = answerGroup.answers[randomIndex];
+      matchedCategories.push({
+        category: answerGroup.category,
+        answer
+      });
     }
   }
 
+  if (matchedCategories.length === 0) {
+    return {
+      answer: "Det kender jeg ikke svaret på endnu.",
+      categories: []
+    };
+  }
+
   return {
-    answer: bestAnswer,
-    category: bestCategory
+    answer: matchedCategories
+      .map((match) => match.answer)
+      .join(" "),
+    categories: matchedCategories.map((match) => match.category)
   };
 }
 
-const topicStats = {
-  navn: 0,
-  lokation: 0,
-  hobby: 0
-};
+async function loadTopicStats() {
+  const data = await fs.readFile("./data/topic-stats.json", "utf8");
+  return JSON.parse(data);
+}
 
-app.get("/", (request, response) => {
+async function saveTopicStats(topicStats) {
+  const json = JSON.stringify(topicStats, null, 2);
+  await fs.writeFile("./data/topic-stats.json", json);
+}
+
+app.get("/", async (request, response) => {
+  const messages = await loadMessages();
+  const topicStats = await loadTopicStats();
+
   response.render("index", {
     messages,
     error: "",
@@ -98,7 +102,10 @@ app.get("/", (request, response) => {
   });
 });
 
-app.post("/ask", (request, response) => {
+app.post("/ask", async (request, response) => {
+  const messages = await loadMessages();
+  const topicStats = await loadTopicStats();
+
   const rawQuestion = request.body.question || "";
   const question = sanitizeQuestion(rawQuestion).trim();
 
@@ -106,8 +113,8 @@ app.post("/ask", (request, response) => {
 
   if (!question) {
     error = "Husk at skrive et spørgsmål, før du sender.";
-  } else if (question.length > 280) {
-    error = "Spørgsmålet må højst være 280 tegn.";
+  } else if (question.length > 100) {
+    error = "Spørgsmålet må højst være 100 tegn.";
   } else {
     messages.push({
       type: "question",
@@ -120,27 +127,25 @@ app.post("/ask", (request, response) => {
     messages.push({
       type: "answer",
       text: result.answer,
-      category: result.category,
+      categories: result.categories,
       createdAt: new Date()
     });
 
-    if (result.category) {
-      topicStats[result.category]++;
+    for (const category of result.categories) {
+      if (topicStats[category] !== undefined) {
+        topicStats[category]++;
+      }
     }
   }
 
-  response.render("index", {
-    messages,
-    error,
-    topicStats
-  });
+  await saveMessages(messages);
+  await saveTopicStats(topicStats);
+
+  response.redirect("/");
 });
 
-app.post("/clear-messages", (request, response) => {
-  messages.length = 0;
-  topicStats.navn = 0;
-  topicStats.lokation = 0;
-  topicStats.hobby = 0;
+app.post("/clear-messages", async (request, response) => {
+  await saveMessages([]);
   response.redirect("/");
 });
 

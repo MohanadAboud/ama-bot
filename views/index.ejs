@@ -38,7 +38,7 @@
 
             <form class="question-form" method="POST" action="/ask" >
                 <div class="form-group">
-                    <label for="question"></label>
+                    <!-- <label for="question">Dit spørgsmål</label> -->
 
                     <input
                         type="text"
@@ -68,12 +68,12 @@
             <% } %>
         </section>
         <section class="stats-section">
-            <h2>Spørgsmål fordelt på emner</h2>
-                    <ul>
-                            <li>Navn: <%= topicStats.navn %></li>
-                            <li>Lokation: <%= topicStats.lokation %></li>
-                            <li>Hobby: <%= topicStats.hobby %></li>
-                    </ul>
+                <h2>Spørgsmål fordelt på emner</h2>
+                <ul>
+                <% for (const stat of Object.entries(topicStats)) { %>
+                    <li><%= stat[0] %>: <%= stat[1] %></li>
+                <% } %>
+                </ul>
         </section>
 
     </main>
