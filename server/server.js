@@ -146,6 +146,7 @@ app.post("/ask", async (request, response) => {
 
 app.post("/clear-messages", async (request, response) => {
   await saveMessages([]);
+  
   response.redirect("/");
 });
 
