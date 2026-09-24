@@ -89,6 +89,16 @@ input:focus-visible {
     height: 48px;
 }
 
+#clear-messages-button {
+    border-color: var(--color-text);
+    background-color: transparent;
+}
+
+#clear-messages-button:hover {
+    background-color: var(--color-question-bg);
+    color: var(--color-text);
+}
+
 .main-content {
     max-width: 800px;
     margin: 0 auto;
@@ -160,7 +170,7 @@ input:focus-visible {
 }
 
 
-#message-time{
+.message-time {
     position: absolute;
     bottom: -18px;
     right: 10px;
@@ -214,4 +224,12 @@ input:focus-visible {
     #welcome-title {
         text-align: center;
     }
+}
+
+#messages {
+    display: flex;
+    flex-direction: column;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 8px 4px 24px;
 }

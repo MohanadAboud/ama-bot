@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="da">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="/images/robot.png" type="image/png">
+    <link rel="icon" href="images/robot.png" type="image/png">
 
     <link
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
     >
-    <link href="/css/styles.css" rel="stylesheet" type="text/css">
+    <link href="css/styles.css" rel="stylesheet" type="text/css">
+    <script src="app.js" defer></script>
 
     <title>AMA-BOT</title>
 </head>
@@ -20,11 +21,9 @@
         <h1 class="site-title">AMA-BOT</h1>
 
         <nav class="site-nav" aria-label="Main navigation">
-            <form method="POST" action="/clear-messages">
-            <button id="resetchat" class="theme-toggle" type="submit">
+            <button id="clear-messages-button" class="theme-toggle" type="button">
                 Reset Chat
             </button>
-            </form>
             <button id="toggleDarkMode" class="theme-toggle" type="button">
                 Dark mode
             </button>
@@ -36,9 +35,8 @@
 
             <h2 id="welcome-title">Velkommen til AMA-BOT</h2>
 
-            <form class="question-form" method="POST" action="/ask" >
+            <form id="question-form" class="question-form">
                 <div class="form-group">
-                    <!-- <label for="question">Dit spørgsmål</label> -->
 
                     <input
                         type="text"
@@ -52,32 +50,11 @@
                     Indsend
                 </button>
             </form>
-            <% if (error) { %>
-                <p role="alert" style="color: red;"><%= error %></p>
-            <% } %>
-            <% for (const message of messages) { %>
-            <article class="<%= message.type %>">
-                <p><%= message.text %></p>
-            <time id="message-time">
-            <%= message.createdAt.toLocaleTimeString("da-DK", {
-                hour: "2-digit",
-                minute: "2-digit"
-            }) %>
-            </time>
-            </article>
-            <% } %>
-        </section>
-        <section class="stats-section">
-                <h2>Spørgsmål fordelt på emner</h2>
-                <ul>
-                <% for (const stat of Object.entries(topicStats)) { %>
-                    <li><%= stat[0] %>: <%= stat[1] %></li>
-                <% } %>
-                </ul>
+            <section id="messages" aria-live="polite"></section>
         </section>
 
     </main>
-<script src="/js/theme.js"></script>
+<script src="js/theme.js"></script>
 
 </body>
 </html>
