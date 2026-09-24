@@ -1,40 +1,11 @@
-let alder = new Date().getFullYear() - 1999;
+import fs from "node:fs/promises";
 
-export const answers = [
-  {
-    category: "navn",
-    keywords: ["navn", "hedder"],
-    answer: [
-      "Mit navn er Mohanad.",
-      "Jeg hedder Mohanad."
-    ]
-  },
+export async function loadAnswers() {
+  const data = await fs.readFile("./data/answers.json", "utf8");
+  return JSON.parse(data);
+}
 
-  {
-    category: "alder",
-    keywords: ["gammel", "alder"],
-    answer: [
-      `Jeg er ${alder} år gammel.`
-    ]
-  },
-
-  {
-    category: "lokation",
-    keywords: ["bor", "fra"],
-    answer: [
-      "Jeg bor i Aarhus.",
-      "Jeg er fra Aarhus."
-    ]
-  },
-
-  {
-    category: "hobby",
-    keywords: ["fritid", "hobby", "kan lide"],
-    answer: [
-      "I min fritid kan jeg godt lide at programmere.",
-      "Jeg elsker at gå ture, når vejret tillader det.",
-      "I min fritid kan jeg godt lide at spille videospil.",
-      "Min hobby er at spille videospil, primært roguelike-spil."
-    ]
-  }
-];
+export async function saveAnswers(answers) {
+  const json = JSON.stringify(answers, null, 2);
+  await fs.writeFile("./data/answers.json", json);
+}
