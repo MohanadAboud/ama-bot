@@ -7,9 +7,18 @@ const app = express();
 const port = 3000;
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({ origin: "http://127.0.0.1:5500" }));
 app.use("/messages", messagesRouter);
 app.use("/answers", answersRouter);
+
+app.use((request, response) => {
+  response.status(404).json({ error: "Ruten blev ikke fundet." });
+});
+
+app.use((error, request, response, next) => {
+  console.error(error);
+  response.status(500).json({ error: "Der opstod en serverfejl." });
+});
 
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);

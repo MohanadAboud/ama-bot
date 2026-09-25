@@ -3,6 +3,10 @@ import { loadAnswers, saveAnswers } from "../data/answers.js";
 
 const router = express.Router();
 
+function isValidAnswerRule(body) {
+  return body.category && body.keywords && body.answer;
+}
+
 router.get("/", async (request, response) => {
   const answers = await loadAnswers();
 
@@ -15,21 +19,33 @@ router.get("/:category", async (request, response) => {
     (answer) => answer.category === request.params.category
   );
 
-  response.json(answerRule ?? null);
+  if (!answerRule) {
+    response.status(404).json({ error: "Svarreglen blev ikke fundet." });
+    return;
+  }
+
+  response.json(answerRule);
 });
 
 router.post("/", async (request, response) => {
   const answers = await loadAnswers();
+  const body = request.body ?? {};
+
+  if (!isValidAnswerRule(body)) {
+    response.status(400).json({ error: "Svarreglen mangler gyldige felter." });
+    return;
+  }
+
   const answerRule = {
-    category: request.body.category,
-    keywords: request.body.keywords,
-    answer: request.body.answer
+    category: body.category,
+    keywords: body.keywords,
+    answer: body.answer
   };
 
   answers.push(answerRule);
   await saveAnswers(answers);
 
-  response.json(answerRule);
+  response.status(201).json(answerRule);
 });
 
 router.put("/:category", async (request, response) => {
@@ -39,16 +55,18 @@ router.put("/:category", async (request, response) => {
   );
 
   if (!answerRule) {
-    response.json(null);
+    response.status(404).json({ error: "Svarreglen blev ikke fundet." });
     return;
   }
 
-  if (request.body.keywords !== undefined) {
-    answerRule.keywords = request.body.keywords;
+  const body = request.body ?? {};
+  if (!isValidAnswerRule({ ...body, category: request.params.category })) {
+    response.status(400).json({ error: "Svarreglen mangler gyldige felter." });
+    return;
   }
-  if (request.body.answer !== undefined) {
-    answerRule.answer = request.body.answer;
-  }
+
+  answerRule.keywords = body.keywords;
+  answerRule.answer = body.answer;
 
   await saveAnswers(answers);
   response.json(answerRule);
@@ -56,12 +74,21 @@ router.put("/:category", async (request, response) => {
 
 router.delete("/:category", async (request, response) => {
   const answers = await loadAnswers();
+  const answerRule = answers.find(
+    (answer) => answer.category === request.params.category
+  );
+
+  if (!answerRule) {
+    response.status(404).json({ error: "Svarreglen blev ikke fundet." });
+    return;
+  }
+
   const remainingAnswers = answers.filter(
-    (answer) => answer.category !== request.params.category
+    (answer) => answer !== answerRule
   );
 
   await saveAnswers(remainingAnswers);
-  response.send();
+  response.status(204).send();
 });
 
 export default router;

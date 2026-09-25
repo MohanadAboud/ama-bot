@@ -6,6 +6,15 @@ import { findBestAnswer, sanitizeQuestion } from "../answerLogic.js";
 
 const router = express.Router();
 
+function escapeHtml(text) {
+  return text
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 router.get("/", async (request, response) => {
   const messages = await loadMessages();
 
@@ -16,22 +25,22 @@ router.post("/", async (request, response) => {
   const messages = await loadMessages();
   const answers = await loadAnswers();
   const topicStats = await loadTopicStats();
-  const rawQuestion = request.body?.question ?? "";
-  const question = sanitizeQuestion(rawQuestion).trim();
+  const rawQuestion = request.body.question.trim();
+  const question = sanitizeQuestion(rawQuestion);
 
   if (!question) {
-    response.json({ error: "Skriv et spørgsmål, før du sender." });
+    response.status(400).json({ error: "Skriv et spørgsmål, før du sender." });
     return;
   }
 
   if (question.length > 100) {
-    response.json({ error: "Spørgsmålet må højst være 100 tegn." });
+    response.status(400).json({ error: "Spørgsmålet må højst være 100 tegn." });
     return;
   }
 
   const questionMessage = {
     type: "question",
-    text: question,
+    text: escapeHtml(question),
     createdAt: new Date()
   };
   messages.push(questionMessage);
@@ -39,7 +48,7 @@ router.post("/", async (request, response) => {
   const result = findBestAnswer(question, answers);
   const answerMessage = {
     type: "answer",
-    text: result.answer,
+    text: escapeHtml(result.answer),
     categories: result.categories,
     createdAt: new Date()
   };
@@ -54,13 +63,13 @@ router.post("/", async (request, response) => {
   await saveMessages(messages);
   await saveTopicStats(topicStats);
 
-  response.json({ question: questionMessage, answer: answerMessage });
+  response.status(201).json({ question: questionMessage, answer: answerMessage });
 });
 
 router.delete("/", async (request, response) => {
   await saveMessages([]);
 
-  response.send();
+  response.status(204).send();
 });
 
 export default router;
